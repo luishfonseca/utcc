@@ -1,9 +1,13 @@
-package uTCC
+package wrapper
 
 import (
+	"errors"
+	"log"
 	"math/rand"
 
 	"github.com/valyala/fasthttp"
+
+	"github.com/luishfonseca/uTCC/internal/uTCC"
 )
 
 // State of the uTCC
@@ -15,7 +19,7 @@ type State struct {
 	coord_addr string
 
 	branching     int
-	active_tokens map[int]Token
+	active_tokens map[int]uTCC.Token
 }
 
 func (s *State) Client() *fasthttp.Client {
@@ -42,7 +46,7 @@ func NewState(dapr_addr, app_addr, coord_addr string, branching int) *State {
 		app_addr:      app_addr,
 		coord_addr:    coord_addr,
 		branching:     branching,
-		active_tokens: make(map[int]Token),
+		active_tokens: make(map[int]uTCC.Token),
 	}
 }
 
@@ -56,22 +60,42 @@ func (s *State) StoreToken(token string) int {
 		i = rand.Int()
 	}
 
-	s.active_tokens[i] = Parse(token)
+	s.active_tokens[i] = uTCC.ParseToken(token, s.branching)
+
+	log.Printf("Stored token <%d>: %d", i, s.active_tokens[i].N())
 
 	return i
 }
 
 // Get a token fraction from the state
-func (s *State) GetTokenFraction(id int) string {
-	token := s.active_tokens[id]
-	fraction := token.Fraction(s.branching)
+func (s *State) GetTokenFraction(id int) (string, error) {
+	token, ok := s.active_tokens[id]
+	if !ok {
+		return "", errors.New("Token not found")
+	}
+
+	fraction, err := token.Fraction()
+	if err != nil {
+		return "", err
+	}
+
 	s.active_tokens[id] = token
-	return fraction.String()
+
+	log.Printf("Fraction of token <%d>: %d (remaining: %d)", id, fraction.N(), token.N())
+
+	return fraction.String(), nil
+}
+
+func (s *State) HasRemainingToken(id int) bool {
+	token, ok := s.active_tokens[id]
+	return ok && token.N() > 0
 }
 
 // Get remaining token from the state
 func (s *State) GetRemainingToken(id int) string {
-	token := s.active_tokens[id]
+	token, _ := s.active_tokens[id]
+	log.Printf("Remaining token <%d>: %d", id, token.N())
+
 	delete(s.active_tokens, id)
 	return token.String()
 }

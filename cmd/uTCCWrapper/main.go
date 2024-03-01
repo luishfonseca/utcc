@@ -6,7 +6,6 @@ import (
 
 	"github.com/valyala/fasthttp"
 
-	"github.com/luishfonseca/uTCC/internal/uTCC"
 	"github.com/luishfonseca/uTCC/internal/wrapper"
 )
 
@@ -22,15 +21,15 @@ var (
 
 func main() {
 	flag.Parse()
-	uTCC := uTCC.NewState(*dapr_addr, *app_addr, *coord_addr, *branching)
+	wrapperState := wrapper.NewState(*dapr_addr, *app_addr, *coord_addr, *branching)
 
 	go func() {
-		if err := fasthttp.ListenAndServe(*wrapper_addr, func(ctx *fasthttp.RequestCtx) { wrapper.Handler(ctx, uTCC) }); err != nil {
+		if err := fasthttp.ListenAndServe(*wrapper_addr, func(ctx *fasthttp.RequestCtx) { wrapper.Handler(ctx, wrapperState) }); err != nil {
 			log.Fatalf("error in ListenAndServe: %v", err)
 		}
 	}()
 
-	log.Printf("uTCC is running")
+	log.Printf("uTCC Wrapper is running on %s", *wrapper_addr)
 
 	select {}
 }
