@@ -3,7 +3,7 @@ package coordinator
 import (
 	"sync"
 
-	"github.com/luishfonseca/uTCC/internal/uTCC"
+	"github.com/luishfonseca/utcc/internal/uTCC"
 )
 
 type Token struct {

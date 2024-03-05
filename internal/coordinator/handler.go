@@ -7,7 +7,7 @@ import (
 
 	"github.com/valyala/fasthttp"
 
-	"github.com/luishfonseca/uTCC/internal/uTCC"
+	"github.com/luishfonseca/utcc/internal/uTCC"
 )
 
 func requestHandler(ctx *fasthttp.RequestCtx, state *State) {

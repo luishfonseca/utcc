@@ -6,7 +6,7 @@ import (
 
 	"github.com/valyala/fasthttp"
 
-	"github.com/luishfonseca/uTCC/internal/coordinator"
+	"github.com/luishfonseca/utcc/internal/coordinator"
 )
 
 var (

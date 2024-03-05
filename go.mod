@@ -1,4 +1,4 @@
-module github.com/luishfonseca/uTCC
+module github.com/luishfonseca/utcc
 
 go 1.21.5
 
