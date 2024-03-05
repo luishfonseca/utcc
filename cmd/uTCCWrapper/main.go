@@ -21,10 +21,10 @@ var (
 
 func main() {
 	flag.Parse()
-	wrapperState := wrapper.NewState(*dapr_addr, *app_addr, *coord_addr, *branching)
+	state := wrapper.NewState(*dapr_addr, *app_addr, *coord_addr, *branching)
 
 	go func() {
-		if err := fasthttp.ListenAndServe(*wrapper_addr, func(ctx *fasthttp.RequestCtx) { wrapper.Handler(ctx, wrapperState) }); err != nil {
+		if err := fasthttp.ListenAndServe(*wrapper_addr, func(ctx *fasthttp.RequestCtx) { wrapper.Handler(ctx, state) }); err != nil {
 			log.Fatalf("error in ListenAndServe: %v", err)
 		}
 	}()

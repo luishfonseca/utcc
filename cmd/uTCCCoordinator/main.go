@@ -13,14 +13,15 @@ var (
 	coord_addr = flag.String("coord", "localhost:3503", "Coordinator address")
 
 	branching = flag.Int("branching", 4, "Branching factor")
+	depth     = flag.Int("depth", 4, "Depth of the tree")
 )
 
 func main() {
 	flag.Parse()
-	coordState := coordinator.NewState(*branching)
+	state := coordinator.NewState(*depth, *branching)
 
 	go func() {
-		if err := fasthttp.ListenAndServe(*coord_addr, func(ctx *fasthttp.RequestCtx) { coordinator.Handler(ctx, coordState) }); err != nil {
+		if err := fasthttp.ListenAndServe(*coord_addr, func(ctx *fasthttp.RequestCtx) { coordinator.Handler(ctx, state) }); err != nil {
 			log.Fatalf("error in ListenAndServe: %v", err)
 		}
 	}()

@@ -1,7 +1,6 @@
 package uTCC
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -21,6 +20,14 @@ func (t Token) N() int64 {
 	return t.n
 }
 
+func (t Token) ID() int64 {
+	return t.id
+}
+
+func NewToken(id, n int64, branching int) Token {
+	return Token{id, n, time.Now(), branching, n / int64(branching)}
+}
+
 func ParseToken(token string, branching int) Token {
 	parts := strings.Split(token, "|")
 	id, _ := strconv.ParseInt(parts[0], 10, 64)
@@ -30,15 +37,19 @@ func ParseToken(token string, branching int) Token {
 	return Token{id, n, ts, branching, n / int64(branching)}
 }
 
-func (t *Token) Fraction() (Token, error) {
-	if t.n == 0 {
-		return Token{}, errors.New("Token is already fully branched")
-	}
-
+func (t *Token) Fraction() Token {
 	t.n -= t.fraction
-	return Token{t.id, t.fraction, t.ts, t.branching, t.fraction / int64(t.branching)}, nil
+	return Token{t.id, t.fraction, t.ts, t.branching, t.fraction / int64(t.branching)}
+}
+
+func (t *Token) Join(other Token) {
+	t.n -= other.n
+}
+
+func (t Token) Complete() bool {
+	return t.n == 0
 }
 
 func (t Token) String() string {
-	return fmt.Sprintf("%d|%d|%s", t.n, t.id, t.ts.Format(time.RFC3339))
+	return fmt.Sprintf("%d|%d|%s", t.id, t.n, t.ts.Format(time.RFC3339))
 }

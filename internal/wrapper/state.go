@@ -68,17 +68,18 @@ func (s *State) StoreToken(token string) int {
 }
 
 // Get a token fraction from the state
-func (s *State) GetTokenFraction(id int) (string, error) {
+func (s *State) GetTokenFraction(id int, request func(string) string) (string, error) {
 	token, ok := s.active_tokens[id]
 	if !ok {
 		return "", errors.New("Token not found")
 	}
 
-	fraction, err := token.Fraction()
-	if err != nil {
-		return "", err
+	if token.Complete() {
+		token = uTCC.ParseToken(request(token.String()), s.branching)
+		log.Printf("Token <%d> is fully consumed, requested new token: <%d>", id, token.N())
 	}
 
+	fraction := token.Fraction()
 	s.active_tokens[id] = token
 
 	log.Printf("Fraction of token <%d>: %d (remaining: %d)", id, fraction.N(), token.N())
@@ -88,12 +89,12 @@ func (s *State) GetTokenFraction(id int) (string, error) {
 
 func (s *State) HasRemainingToken(id int) bool {
 	token, ok := s.active_tokens[id]
-	return ok && token.N() > 0
+	return ok && !token.Complete()
 }
 
 // Get remaining token from the state
 func (s *State) GetRemainingToken(id int) string {
-	token, _ := s.active_tokens[id]
+	token := s.active_tokens[id]
 	log.Printf("Remaining token <%d>: %d", id, token.N())
 
 	delete(s.active_tokens, id)
